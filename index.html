@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório Interativo de Campanhas - Maio </title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .chart-container {
+      position: relative;
+      width: 100%;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      height: 320px;
+      max-height: 400px;
+    }
+    @media (min-width: 768px) {
+      .chart-container {
+        height: 400px;
+      }
+    }
+    .kpi-card {
+      background-color: white;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      transition: transform 0.2s;
+    }
+    .kpi-card:hover {
+      transform: translateY(-5px);
+    }
+    .nav-link {
+      transition: color 0.2s, border-bottom-color 0.2s;
+    }
+    .nav-link.active {
+      color: #0d9488; /* teal-600 */
+      border-bottom-color: #0d9488;
+    }
+    .gemini-output {
+      margin-top: 1rem;
+      padding: 1rem;
+      background-color: #f8fafc; /* slate-50 */
+      border-radius: 0.5rem;
+      border: 1px solid #e2e8f0; /* slate-200 */
+      white-space: pre-wrap; /* Preserve line breaks */
+    }
+    .loading-spinner {
+      border: 4px solid #f3f3f3; /* Light grey */
+      border-top: 4px solid #0d9488; /* Teal */
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+      margin: 1rem auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+
+<header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+  <nav class="container mx-auto px-4">
+    <div class="flex items-center justify-between h-16">
+      <h1 class="text-xl font-bold text-slate-700">Relatório de Campanhas - Maio ✨ IA</h1>
+      <div class="hidden md:flex items-center space-x-8">
+        <a href="#overview" class="nav-link text-slate-600 hover:text-teal-600 border-b-2 border-transparent pb-1">Visão Geral</a>
+        <a href="#traffic-analysis" class="nav-link text-slate-600 hover:text-teal-600 border-b-2 border-transparent pb-1">Análise de Tráfego</a>
+        <a href="#leads-analysis" class="nav-link text-slate-600 hover:text-teal-600 border-b-2 border-transparent pb-1">Análise de Leads</a>
+        <a href="#recommendations" class="nav-link text-slate-600 hover:text-teal-600 border-b-2 border-transparent pb-1">Recomendações</a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<main class="container mx-auto p-4 md:p-8">
+
+  <section id="overview" class="py-12">
+    <h2 class="text-3xl font-bold text-center mb-4 text-slate-800">Desempenho Geral em Maio</h2>
+    <p class="text-center max-w-3xl mx-auto text-slate-600 mb-12">
+      Uma visão consolidada do investimento e dos resultados das campanhas de tráfego e geração de leads. Explore os cartões para um resumo rápido e o gráfico para uma comparação direta entre as campanhas.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+      <div class="kpi-card text-center">
+        <h3 class="text-lg font-medium text-slate-500">Investimento Total</h3>
+        <p class="text-4xl font-bold text-teal-600 mt-2">R$ 1.094,92</p>
+      </div>
+      <div class="kpi-card text-center">
+        <h3 class="text-lg font-medium text-slate-500">Resultados Totais</h3>
+        <p class="text-4xl font-bold text-teal-600 mt-2">2.993</p>
+        <p class="text-sm text-slate-400">(2.946 Visualizações + 47 Leads)</p>
+      </div>
+      <div class="kpi-card text-center">
+        <h3 class="text-lg font-medium text-slate-500">Custo por Visualização</h3>
+        <p class="text-4xl font-bold text-teal-600 mt-2">R$ 0,07</p>
+        <p class="text-sm text-slate-400">(Campanha Mobi Livre)</p>
+      </div>
+      <div class="kpi-card text-center">
+        <h3 class="text-lg font-medium text-slate-500">Custo por Lead (Médio)</h3>
+        <p class="text-4xl font-bold text-red-500 mt-2">R$ 18,97</p>
+        <p class="text-sm text-slate-400">(Leads: R$14,20 vs Otimizada: R$25,05)</p>
+      </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-md">
+      <h3 class="text-xl font-bold text-center mb-4 text-slate-700">Comparativo Geral das Campanhas</h3>
+      <div class="chart-container">
+        <canvas id="campaignOverviewChart"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <section id="traffic-analysis" class="py-12">
+    <h2 class="text-3xl font-bold text-center mb-4 text-slate-800">Análise de Tráfego: Campanha "Mobi Livre"</h2>
+    <p class="text-center max-w-3xl mx-auto text-slate-600 mb-12">
+      Esta seção detalha o desempenho da campanha focada em visualizações de página. O objetivo era maximizar o tráfego com o menor custo possível. Analise o desempenho por idade e gênero para identificar os públicos mais eficientes.
+    </p>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h3 class="text-xl font-bold text-center mb-4 text-slate-700">Visualizações por Faixa Etária</h3>
+        <div class="chart-container h-80 md:h-96">
+          <canvas id="trafficByAgeChart"></canvas>
+        </div>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h3 class="text-xl font-bold text-center mb-4 text-slate-700">Custo por Visualização (Gênero)</h3>
+        <div class="flex justify-center mb-4">
+          <select id="ageGenderFilter" class="border rounded-md p-2 bg-slate-100">
+            <option value="45-54">45-54 anos</option>
+            <option value="25-34">25-34 anos</option>
+            <option value="35-44">35-44 anos</option>
+          </select>
+        </div>
+        <div class="chart-container h-80 md:h-96">
+          <canvas id="cpvByGenderChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="leads-analysis" class="py-12">
+    <h2 class="text-3xl font-bold text-center mb-4 text-slate-800">Análise de Leads: Padrão vs. Otimizada</h2>
+    <p class="text-center max-w-3xl mx-auto text-slate-600 mb-12">
+      Aqui comparamos as duas campanhas de geração de leads. Surpreendentemente, a campanha "Otimizada" teve um Custo por Lead (CPL) 76% maior. Use os botões para alternar entre as campanhas e explorar qual público e criativo funcionou melhor em cada uma.
+    </p>
+    <div class="flex justify-center items-center space-x-2 mb-8 bg-slate-200 p-2 rounded-lg max-w-md mx-auto">
+      <button id="btnLeadsStd" class="lead-toggle-btn w-full py-2 px-4 rounded-md bg-teal-600 text-white font-semibold">Leads Padrão</button>
+      <button id="btnLeadsOpt" class="lead-toggle-btn w-full py-2 px-4 rounded-md bg-white text-slate-700 font-semibold">Leads Otimizada</button>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h3 id="cplDemographicTitle" class="text-xl font-bold text-center mb-4 text-slate-700">CPL por Demografia (Leads Padrão)</h3>
+        <div class="chart-container h-80 md:h-96">
+          <canvas id="cplByDemographicChart"></canvas>
+        </div>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h3 id="creativePerfTitle" class="text-xl font-bold text-center mb-4 text-slate-700">Desempenho dos Criativos (Leads Padrão)</h3>
+        <div class="chart-container h-80 md:h-96">
+          <canvas id="creativePerformanceChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="recommendations" class="py-12">
+    <h2 class="text-3xl font-bold text-center mb-4 text-slate-800">Recomendações Estratégicas</h2>
+    <p class="text-center max-w-3xl mx-auto text-slate-600 mb-8">
+      Com base na análise dos dados, estas são as ações sugeridas para otimizar o investimento, refinar a segmentação e melhorar o desenvolvimento de criativos em campanhas futuras. Utilize a IA abaixo para gerar um resumo executivo ou novas ideias de criativos.
+    </p>
+
+    <div class="text-center mb-8">
+      <button id="btnGenerateSummary" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out">
+        ✨ Gerar Resumo Executivo com IA
+      </button>
+      <div id="gemini-summary-loading" class="loading-spinner hidden my-4"></div>
+      <div id="gemini-summary-output" class="gemini-output text-left hidden"></div>
+    </div>
+
+    <div class="space-y-6 max-w-4xl mx-auto">
+      <div id="recommendation-budget" class="kpi-card">
+        <h3 class="font-bold text-lg text-teal-700 mb-2">1. Otimização de Orçamento e Segmentação</h3>
+        <ul class="list-disc list-inside space-y-2 text-slate-600">
+          <li><span class="font-semibold">Pausar Investimento Ineficaz:</span> Suspender imediatamente o gasto em segmentos com zero retorno, como <span class="font-bold text-red-600">homens de 25-34 anos na campanha "Otimizada"</span> (R$40,37 gastos, 0 leads) e <span class="font-bold text-red-600">mulheres de 25-34 e 45-54 na campanha "Padrão"</span> (R$18,38 gastos, 0 leads).</li>
+          <li><span class="font-semibold">Escalar Segmentos Vencedores:</span> Aumentar o investimento nos públicos de melhor performance: <span class="font-bold text-green-600">mulheres de 35-44 anos na campanha "Padrão" (CPL R$6,40)</span> e <span class="font-bold text-green-600">mulheres de 55-64 anos na "Otimizada" (CPL R$16,45)</span>.</li>
+          <li><span class="font-semibold">Revisar Campanha "Otimizada":</span> Dado o CPL geral mais alto, consolidar os aprendizados (públicos e criativos de sucesso) na estrutura mais eficiente da campanha "Padrão", em vez de manter duas campanhas separadas.</li>
+        </ul>
+      </div>
+      <div id="recommendation-creatives" class="kpi-card">
+        <h3 class="font-bold text-lg text-teal-700 mb-2">2. Desenvolvimento e Foco em Criativos</h3>
+        <ul class="list-disc list-inside space-y-2 text-slate-600">
+          <li><span class="font-semibold">Priorizar Criativos de Alta Performance:</span> Focar o orçamento nos anúncios com menor CPL, como <span class="font-bold text-green-600">"ADF02 - Conversa que ninguém quer ter" (CPL R$4,14)</span> e <span class="font-bold text-green-600">"AD02 - Erro 10k reais" (CPL R$4,30)</span>.</li>
+          <li><span class="font-semibold">Analisar Temas de Sucesso:</span> Desenvolver novos criativos baseados nos temas que funcionaram: abordagem de medos específicos, problemas urgentes e curiosidade.</li>
+          <li><span class="font-semibold">Pausar Criativos de Baixa Performance:</span> Desativar anúncios como <span class="font-bold text-red-600">"ADF01 - Carro não liga" na campanha "Padrão" (gastou R$22,65 sem gerar leads)</span> e "ADF04 - Estudou por anos" (CPL de R$19,13).</li>
+        </ul>
+        <div class="text-center mt-6">
+          <button id="btnGenerateCreativeIdeas" class="bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out">
+            ✨ Gerar Novas Ideias de Criativos com IA
+          </button>
+          <div id="gemini-creative-ideas-loading" class="loading-spinner hidden my-4"></div>
+          <div id="gemini-creative-ideas-output" class="gemini-output text-left hidden"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+
+    const campaignData = {
+      overview: {
+        labels: ['Mobi Livre', 'Leads Padrão', 'Leads Otimizada'],
+        investment: [199.69, 369.24, 525.99],
+        results: [2946, 26, 47],
+        cpr: [0.07, 14.20, 25.05]
+      },
+      traffic: {
+        byAge: {
+          labels: ['18-24', '25-34', '35-44', '45-54', '55-64'],
+          views: [108, 847, 799, 1032, 259],
+          cost: [3.77, 51.60, 49.10, 76.90, 18.32]
+        },
+        cpvByGender: {
+          '45-54': { labels: ['Masculino', 'Feminino'], cpv: [0.055, 0.090] },
+          '25-34': { labels: ['Masculino', 'Feminino'], cpv: [0.063, 0.059] },
+          '35-44': { labels: ['Masculino', 'Feminino'], cpv: [0.067, 0.056] },
+        }
+      },
+      leads: {
+        standard: {
+          cplByDemographic: {
+            labels: ['Homens 45-54', 'Homens 35-44', 'Mulheres 35-44', 'Homens 25-34'],
+            cpl: [12.89, 8.49, 6.40, 10.35],
+            leads: [7, 4, 1, 2]
+          },
+          creativePerformance: {
+            labels: ['AD04 - Saber seguro...', 'ADF04 - Estudou...', 'ADF02 - Conversa...', 'ADF05 - Nada pode...', 'ADF01 - Carro...'],
+            leads: [14, 3, 3, 2, 0],
+            cpl: [12.12, 19.13, 4.14, 9.09, Infinity]
+          }
+        },
+        optimized: {
+          cplByDemographic: {
+            labels: ['Mulheres 55-64', 'Mulheres 35-44', 'Homens 35-44', 'Mulheres 45-54', 'Homens 45-54', 'Mulheres 25-34'],
+            cpl: [16.45, 24.61, 23.44, 23.25, 27.28, 31.88],
+            leads: [6, 2, 2, 5, 4, 2]
+          },
+          creativePerformance: {
+            labels: ['AD05 - Viver...', 'ADF01 - Carro...', 'AD02 - Erro...', 'ADF02 - Conversa...', 'ADF05 - Nada...'],
+            leads: [3, 3, 1, 2, 1],
+            cpl: [8.78, 17.67, 4.30, 7.10, 9.11]
+          }
+        }
+      }
+    };
+
+    let cplDemographicChart, creativePerformanceChart, cpvByGenderChart;
+
+    const tooltipLabel = (context) => {
+      let label = context.dataset.label || '';
+      if (label) { label += ': '; }
+      if (context.parsed.y !== null) {
+        label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed.y);
+      }
+      return label;
+    };
+
+    function createChart(ctx, type, data, options = {}) {
+      return new Chart(ctx, { type, data, options });
+    }
+
+    const overviewCtx = document.getElementById('campaignOverviewChart').getContext('2d');
+    createChart(overviewCtx, 'bar', {
+      labels: campaignData.overview.labels,
+      datasets: [
+        {
+          label: 'Investimento (BRL)',
+          data: campaignData.overview.investment,
+          backgroundColor: '#0d9488',
+          yAxisID: 'y'
+        },
+        {
+          label: 'Custo por Resultado (BRL)',
+          data: campaignData.overview.cpr,
+          backgroundColor: '#f43f5e',
+          yAxisID: 'y1'
+        }
+      ]
+    }, {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { tooltip: { callbacks: { label: tooltipLabel } }, legend: { position: 'top' } },
+      scales: {
+        y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Investimento (BRL)'}},
+        y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Custo por Resultado (BRL)'}}
+      }
+    });
+
+    const trafficByAgeCtx = document.getElementById('trafficByAgeChart').getContext('2d');
+    createChart(trafficByAgeCtx, 'bar', {
+      labels: campaignData.traffic.byAge.labels,
+      datasets: [{ label: 'Visualizações de Página', data: campaignData.traffic.byAge.views, backgroundColor: '#14b8a6' }]
+    }, { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } } });
+
+    function updateCPVByGenderChart(ageGroup) {
+      const chartData = campaignData.traffic.cpvByGender[ageGroup];
+      if (!cpvByGenderChart) {
+        const cpvByGenderCtx = document.getElementById('cpvByGenderChart').getContext('2d');
+        cpvByGenderChart = createChart(cpvByGenderCtx, 'bar', {
+          labels: chartData.labels,
+          datasets: [{ label: 'Custo por Visualização (BRL)', data: chartData.cpv, backgroundColor: ['#2dd4bf', '#0f766e'] }]
+        }, { responsive: true, maintainAspectRatio: false, plugins: { tooltip: { callbacks: { label: tooltipLabel } }, legend: { display: false } } });
+      } else {
+        cpvByGenderChart.data.labels = chartData.labels;
+        cpvByGenderChart.data.datasets[0].data = chartData.cpv;
+        cpvByGenderChart.update();
+      }
+    }
+
+    document.getElementById('ageGenderFilter').addEventListener('change', (e) => updateCPVByGenderChart(e.target.value));
+    updateCPVByGenderChart('45-54');
+
+    function updateLeadsCharts(type) {
+      const data = campaignData.leads[type];
+
+      const cplDemographicCtx = document.getElementById('cplByDemographicChart').getContext('2d');
+      if (cplDemographicChart) cplDemographicChart.destroy();
+      cplDemographicChart = createChart(cplDemographicCtx, 'bar', {
+        labels: data.cplByDemographic.labels,
+        datasets: [{ label: 'Custo por Lead (BRL)', data: data.cplByDemographic.cpl, backgroundColor: '#0d9488' }]
+      }, { responsive: true, maintainAspectRatio: false, plugins: { tooltip: { callbacks: { label: tooltipLabel } }, legend: { display: false } } });
+
+      const creativePerformanceCtx = document.getElementById('creativePerformanceChart').getContext('2d');
+      if (creativePerformanceChart) creativePerformanceChart.destroy();
+      creativePerformanceChart = createChart(creativePerformanceCtx, 'bar', {
+        labels: data.creativePerformance.labels,
+        datasets: [{
+          label: 'Leads Gerados',
+          data: data.creativePerformance.leads,
+          backgroundColor: data.creativePerformance.cpl.map(cpl => cpl < 15 && cpl !== Infinity ? '#10b981' : '#f43f5e'),
+        }]
+      }, {
+        responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                let label = `Leads: ${context.parsed.x}`;
+                const cpl = data.creativePerformance.cpl[context.dataIndex];
+                if(cpl !== Infinity){
+                  label += ` | CPL: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cpl)}`;
+                } else { label += ` | CPL: N/A (sem conversão)`; }
+                return label;
+              }
+            }
+          }
+        },
+        scales: { x: { beginAtZero: true, title: { display: true, text: 'Número de Leads' } } }
+      });
+
+      const titleSuffix = type === 'standard' ? '(Leads Padrão)' : '(Leads Otimizada)';
+      document.getElementById('cplDemographicTitle').innerText = `CPL por Demografia ${titleSuffix}`;
+      document.getElementById('creativePerfTitle').innerText = `Desempenho dos Criativos ${titleSuffix}`;
+    }
+
+    const btnLeadsStd = document.getElementById('btnLeadsStd');
+    const btnLeadsOpt = document.getElementById('btnLeadsOpt');
+
+    btnLeadsStd.addEventListener('click', () => {
+      updateLeadsCharts('standard');
+      btnLeadsStd.classList.add('bg-teal-600', 'text-white'); btnLeadsStd.classList.remove('bg-white', 'text-slate-700');
+      btnLeadsOpt.classList.add('bg-white', 'text-slate-700'); btnLeadsOpt.classList.remove('bg-teal-600', 'text-white');
+    });
+    btnLeadsOpt.addEventListener('click', () => {
+      updateLeadsCharts('optimized');
+      btnLeadsOpt.classList.add('bg-teal-600', 'text-white'); btnLeadsOpt.classList.remove('bg-white', 'text-slate-700');
+      btnLeadsStd.classList.add('bg-white', 'text-slate-700'); btnLeadsStd.classList.remove('bg-teal-600', 'text-white');
+    });
+    updateLeadsCharts('standard');
+
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('.nav-link');
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        if (pageYOffset >= sectionTop - 70) { current = section.getAttribute('id'); }
+      });
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href').includes(current)) { link.classList.add('active'); }
+      });
+    });
+
+    async function callGeminiAPI(prompt, outputElement, loadingElement) {
+      loadingElement.classList.remove('hidden');
+      outputElement.classList.add('hidden');
+      outputElement.textContent = '';
+
+      try {
+        let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+        const payload = { contents: chatHistory };
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorData.error?.message || 'Unknown error'}`);
+        }
+
+        const result = await response.json();
+
+        if (result.candidates && result.candidates.length > 0 &&
+          result.candidates[0].content && result.candidates[0].content.parts &&
+          result.candidates[0].content.parts.length > 0) {
+          const text = result.candidates[0].content.parts[0].text;
+          outputElement.textContent = text;
+        } else {
+          outputElement.textContent = "Não foi possível obter uma resposta da IA ou a resposta está vazia.";
+        }
+      } catch (error) {
+        console.error("Erro ao chamar a API Gemini:", error);
+        outputElement.textContent = `Erro ao gerar conteúdo com IA: ${error.message}. Verifique o console para mais detalhes.`;
+      } finally {
+        loadingElement.classList.add('hidden');
+        outputElement.classList.remove('hidden');
+      }
+    }
+
+    const btnGenerateSummary = document.getElementById('btnGenerateSummary');
+    const summaryOutput = document.getElementById('gemini-summary-output');
+    const summaryLoading = document.getElementById('gemini-summary-loading');
+
+    btnGenerateSummary.addEventListener('click', () => {
+      const recommendationsText = [];
+      document.querySelectorAll('#recommendation-budget ul li, #recommendation-creatives ul li').forEach(li => {
+        recommendationsText.push(li.innerText);
+      });
+      const fullRecommendations = recommendationsText.join('\n');
+      const prompt = `Com base nas seguintes recomendações de campanha de marketing, gere um resumo executivo conciso em português, com 2 a 3 parágrafos curtos e diretos, destacando os pontos de ação mais críticos:\n\n${fullRecommendations}`;
+      callGeminiAPI(prompt, summaryOutput, summaryLoading);
+    });
+
+    const btnGenerateCreativeIdeas = document.getElementById('btnGenerateCreativeIdeas');
+    const creativeIdeasOutput = document.getElementById('gemini-creative-ideas-output');
+    const creativeIdeasLoading = document.getElementById('gemini-creative-ideas-loading');
+
+    btnGenerateCreativeIdeas.addEventListener('click', () => {
+      const successfulThemes = "abordagem de medos específicos, problemas urgentes e curiosidade";
+      const productContext = "serviços financeiros ou seguros, focados em tranquilidade e resolução de problemas inesperados (ex: carro que não liga, erros financeiros, conversas difíceis sobre planejamento)";
+      const prompt = `Com base nos seguintes temas de sucesso em anúncios de marketing: "${successfulThemes}". E considerando o contexto de "${productContext}". Gere 3 novas ideias de texto para anúncios em português. Cada ideia deve ter:\n1. Um Título chamativo (máximo 5 palavras).\n2. Um Corpo de texto persuasivo (máximo 30 palavras).\n3. Uma Chamada para Ação (CTA) clara (máximo 5 palavras).\nFormate a resposta de forma clara, separando cada ideia.`;
+      callGeminiAPI(prompt, creativeIdeasOutput, creativeIdeasLoading);
+    });
+
+  });
+</script>
+
+</body>
+</html>
